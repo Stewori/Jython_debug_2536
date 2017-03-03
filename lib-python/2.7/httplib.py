@@ -242,7 +242,7 @@ _MAXHEADERS = 100
 #
 # VCHAR defined in http://tools.ietf.org/html/rfc5234#appendix-B.1
 
-# the patterns for both name and value are more lenient than RFC
+# the patterns for both name and value are more leniant than RFC
 # definitions to allow for backwards compatibility
 _is_legal_header_name = re.compile(r'\A[^:\s][^:\r\n]*\Z').match
 _is_illegal_header_value = re.compile(r'\n(?![ \t])|\r(?![ \t\n])').search
@@ -273,8 +273,9 @@ class HTTPMessage(mimetools.Message):
 
         Read header lines up to the entirely blank line that terminates them.
         The (normally blank) line that ends the headers is skipped, but not
-        included in the returned list.  If an invalid line is found in the
-        header section, it is skipped, and further lines are processed.
+        included in the returned list.  If a non-header line ends the headers,
+        (which is an error), an attempt is made to backspace over it; it is
+        never included in the returned list.
 
         The variable self.status is set to the empty string if all went well,
         otherwise it is an error message.  The variable self.headers is a
@@ -301,17 +302,19 @@ class HTTPMessage(mimetools.Message):
         self.status = ''
         headerseen = ""
         firstline = 1
-        tell = None
-        if not hasattr(self.fp, 'unread') and self.seekable:
+        startofline = unread = tell = None
+        if hasattr(self.fp, 'unread'):
+            unread = self.fp.unread
+        elif self.seekable:
             tell = self.fp.tell
         while True:
             if len(hlist) > _MAXHEADERS:
                 raise HTTPException("got more than %d headers" % _MAXHEADERS)
             if tell:
                 try:
-                    tell()
+                    startofline = tell()
                 except IOError:
-                    tell = None
+                    startofline = tell = None
                     self.seekable = 0
             line = self.fp.readline(_MAXLINE + 1)
             if len(line) > _MAXLINE:
@@ -342,14 +345,26 @@ class HTTPMessage(mimetools.Message):
                 # It's a legal header line, save it.
                 hlist.append(line)
                 self.addheader(headerseen, line[len(headerseen)+1:].strip())
+                continue
             elif headerseen is not None:
                 # An empty header name. These aren't allowed in HTTP, but it's
                 # probably a benign mistake. Don't add the header, just keep
                 # going.
-                pass
+                continue
             else:
-                # It's not a header line; skip it and try the next line.
-                self.status = 'Non-header line where header expected'
+                # It's not a header line; throw it back and stop here.
+                if not self.dict:
+                    self.status = 'No headers'
+                else:
+                    self.status = 'Non-header line where header expected'
+                # Try to undo the read.
+                if unread:
+                    unread(line)
+                elif tell:
+                    self.fp.seek(startofline)
+                else:
+                    self.status = self.status + '; bad seek'
+                break
 
 class HTTPResponse:
 
