@@ -375,6 +375,10 @@ def main(tests=None, testdir=None, verbose=0, quiet=False,
         tracer = trace.Trace(ignoredirs=[sys.prefix, sys.exec_prefix],
                              trace=False, count=True)
 
+    tests.remove("test_isinstance")
+    tests.remove("test_java_subclasses")
+    tests = tests[220:258]
+
     test_times = []
     test_support.verbose = verbose      # Tell tests to be moderately quiet
     test_support.use_resources = use_resources
@@ -500,7 +504,8 @@ def main(tests=None, testdir=None, verbose=0, quiet=False,
     if memo:
         savememo(memo, good, failures, bad, skips, skipped, allran, resource_denieds)
 
-    sys.exit(surprises > 0)
+    #sys.exit(surprises > 0)
+    sys.exit(1) # for convenient loop-script we always return non-zero
 
 
 STDTESTS = [

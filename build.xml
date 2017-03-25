@@ -152,7 +152,7 @@ oracle.jar=C:/workspace/HEAD/for_development/bisdevsrv28/jboss/server/infra/lib/
             <pathelement path="${extlibs.dir}/asm-5.0.4.jar" />
             <pathelement path="${extlibs.dir}/asm-commons-5.0.4.jar" />
             <pathelement path="${extlibs.dir}/asm-util-5.0.4.jar" />
-            <pathelement path="${extlibs.dir}/guava-20.0.jar" />
+            <pathelement path="${extlibs.dir}/guava-22.0-SNAPSHOT.jar" />
             <pathelement path="${extlibs.dir}/icu4j-58.1.jar" />
             <pathelement path="${extlibs.dir}/jffi-1.2.13.jar"/>
             <pathelement path="${extlibs.dir}/java-sizeof-0.0.5.jar"/>
@@ -570,7 +570,7 @@ The readme text for the next release will be like:
             <rule pattern="org.bouncycastle.**" result="org.python.bouncycastle.@1"/>
             <zipfileset src="extlibs/commons-compress-1.12.jar"/>
             <rule pattern="org.apache.**" result="org.python.apache.@1"/>
-            <zipfileset src="extlibs/guava-20.0.jar"/>
+            <zipfileset src="extlibs/guava-22.0-SNAPSHOT.jar"/>
             <rule pattern="com.google.**" result="org.python.google.@1"/>
             <zipfileset src="extlibs/icu4j-58.1.jar"/>
             <rule pattern="com.ibm.icu.**" result="org.python.icu.@1"/>
